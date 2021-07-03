@@ -26,7 +26,7 @@ const Transaction = {
 
   add(transaction) {
     Transaction.all.push(transaction)
-    Storage.set(Transaction.all)
+    Storage.set(Transaction.all.sort((a, b) => new Date(a.date) - new Date(b.date)))
     App.reload()
   },
   remove(index) {
@@ -63,7 +63,7 @@ const Transaction = {
 const ChartGraph = {
   graphCreate(){
     let ctx = document.getElementsByClassName('line-chart');
-    var chartGraph = new Chart(ctx, {
+    let chart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
@@ -100,14 +100,7 @@ const ChartGraph = {
           ],
           borderWidth: 6
         }]
-      },
-      // options: {
-      //   scales: {
-      //     y: {
-      //       beginAtZero: true
-      //     }
-      //   }
-      // }
+      }
     });
   }
 }
@@ -221,7 +214,7 @@ const Form = {
 
 const App = {
   init() {
-    Transaction.all.forEach(DOM.addTransaction)
+    Transaction.all.sort((a, b) => a.date - b.date).forEach(DOM.addTransaction)
     DOM.updateBalance()
   },
   reload() {
