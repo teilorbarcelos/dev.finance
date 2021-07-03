@@ -214,7 +214,7 @@ const Form = {
 
 const App = {
   init() {
-    Transaction.all.sort((a, b) => a.date - b.date).forEach(DOM.addTransaction)
+    Transaction.all.forEach(DOM.addTransaction)
     DOM.updateBalance()
   },
   reload() {
