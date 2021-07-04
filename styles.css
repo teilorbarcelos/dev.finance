@@ -149,6 +149,11 @@ header {
   color: white;
 }
 
+/* Chart */
+canvas {
+  overflow-x: auto;
+}
+
 /* Table */
 #transaction {
   display: block;

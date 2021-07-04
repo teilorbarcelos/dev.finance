@@ -90,9 +90,9 @@ const ChartGraph = {
             'transparent'
           ],
           borderColor: [
-            'rgba(159, 238, 150, 0.85)'
+            'rgba(101, 226, 104, 0.85)'
           ],
-          borderWidth: 6
+          borderWidth: 3
         },
         {
           label: 'Saídas',
@@ -101,9 +101,9 @@ const ChartGraph = {
             'transparent'
           ],
           borderColor: [
-            'rgba(255, 0, 0, 0.85)'
+            'rgba(226, 101, 101, 0.85)'
           ],
-          borderWidth: 6
+          borderWidth: 3
         },
         {
           label: 'Total',
@@ -114,8 +114,15 @@ const ChartGraph = {
           borderColor: [
             'rgba(0, 255, 9, 0.85)'
           ],
-          borderWidth: 6
+          borderWidth: 3
         }]
+      },
+      options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
       }
     });
   }
