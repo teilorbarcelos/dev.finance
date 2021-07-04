@@ -61,15 +61,31 @@ const Transaction = {
 }
 
 const ChartGraph = {
+  chart: '',
   graphCreate(){
-    let ctx = document.getElementsByClassName('line-chart');
-    let chart = new Chart(ctx, {
+    let labels = [], datasetDataIncomes = [], datasetDataExpense = [], datasetDataTotal = [], total = 0
+
+    Transaction.all.forEach(transaction => {
+      labels.push(Utils.formatDate(transaction.date))
+      total += transaction.amount
+      datasetDataTotal.push(total / 100)
+      if(transaction.amount > 0){
+        datasetDataIncomes.push(transaction.amount / 100)
+        datasetDataExpense.push(0)
+      }else{
+        datasetDataIncomes.push(0)
+        datasetDataExpense.push(transaction.amount * -1 / 100)
+      }
+    })
+    document.getElementById('chart').innerHTML = '<canvas class="line-chart"></canvas>'
+    let ctx = document.getElementsByClassName('line-chart')
+    ChartGraph.chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        labels: labels,
         datasets: [{
           label: 'Entradas',
-          data: [5000, 0, 0],
+          data: datasetDataIncomes,
           backgroundColor: [
             'transparent'
           ],
@@ -80,7 +96,7 @@ const ChartGraph = {
         },
         {
           label: 'Saídas',
-          data: [0, 200, 48],
+          data: datasetDataExpense,
           backgroundColor: [
             'transparent'
           ],
@@ -91,7 +107,7 @@ const ChartGraph = {
         },
         {
           label: 'Total',
-          data: [5000, 4800, 4752],
+          data: datasetDataTotal,
           backgroundColor: [
             'transparent'
           ],
@@ -216,6 +232,7 @@ const App = {
   init() {
     Transaction.all.forEach(DOM.addTransaction)
     DOM.updateBalance()
+    ChartGraph.graphCreate()
   },
   reload() {
     DOM.clearTransactions()
@@ -224,4 +241,3 @@ const App = {
 }
 
 App.init()
-ChartGraph.graphCreate()
