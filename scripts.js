@@ -77,7 +77,7 @@ const ChartGraph = {
         datasetDataExpense.push(transaction.amount * -1 / 100)
       }
     })
-    document.getElementById('chart').innerHTML = '<canvas class="line-chart"></canvas>'
+    document.getElementById('chart').innerHTML = '<canvas class="line-chart"}></canvas>'
     let ctx = document.getElementsByClassName('line-chart')
     ChartGraph.chart = new Chart(ctx, {
       type: 'line',
@@ -239,7 +239,12 @@ const App = {
   init() {
     Transaction.all.forEach(DOM.addTransaction)
     DOM.updateBalance()
-    ChartGraph.graphCreate()
+    if(Transaction.all.length > 0){
+      document.getElementById('chart').classList.remove('hidden')
+      ChartGraph.graphCreate()
+    }else{
+      document.getElementById('chart').classList.add('hidden')
+    }
   },
   reload() {
     DOM.clearTransactions()
