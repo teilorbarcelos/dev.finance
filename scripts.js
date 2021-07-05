@@ -237,12 +237,14 @@ const Form = {
 
 const App = {
   init() {
-    Transaction.all.forEach(DOM.addTransaction)
     DOM.updateBalance()
     if(Transaction.all.length > 0){
+      document.getElementById('data-table').classList.remove('hidden')
       document.getElementById('chart').classList.remove('hidden')
+      Transaction.all.forEach(DOM.addTransaction)
       ChartGraph.graphCreate()
     }else{
+      document.getElementById('data-table').classList.add('hidden')
       document.getElementById('chart').classList.add('hidden')
     }
   },
