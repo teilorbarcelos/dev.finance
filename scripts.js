@@ -1,3 +1,47 @@
+const Auth = {
+  token: null,
+  user: null,
+  email: null,
+  login() {
+    let provider = new firebase.auth.GoogleAuthProvider()
+    firebase
+    .auth()
+    .signInWithPopup(provider)
+    .then(function (result) {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      Auth.token = result.credential.accessToken
+      // The signed-in user info.
+      Auth.user = result.user.displayName
+      Auth.email = result.user.email
+      // ...
+      App.reload()
+    })
+    .catch(function (error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      // ...
+    });
+  },
+  logout(){
+    firebase
+      .auth()
+      .signOut()
+      .then(function() {
+        Auth.token = null
+        Auth.user = null
+        App.reload()
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  }
+}
+
 const Modal = {
   open(){
     document
@@ -161,6 +205,16 @@ const DOM = {
 
   clearTransactions(){
     DOM.transactionsContainer.innerHTML = ''
+  },
+
+  loginBtn(){
+    if(Auth.user != '' && Auth.user != null){
+      document.getElementById('auth').innerHTML = `${Auth.user}<a href="#" class="login-button" onclick="Auth.logout()"> Logout</a>`
+    }else{
+      document
+        .getElementById('auth')
+        .innerHTML = '<a href="#" class="login-button" onclick="Auth.login()">Login com Google</a>'
+    }
   }
 }
 
@@ -237,6 +291,7 @@ const Form = {
 
 const App = {
   init() {
+    DOM.loginBtn()
     DOM.updateBalance()
     if(Transaction.all.length > 0){
       document.getElementById('data-table').classList.remove('hidden')

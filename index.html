@@ -10,13 +10,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,400;0,700;1,100;1,200;1,400;1,700&display=swap" rel="stylesheet">
-  <!-- <script src="https://code.jquery.com/jquery-3.6.0.js"></script> -->
   <title>dev.finance$</title>
 </head>
 
 <body>
   <header>
     <img src="./assets/logo.svg" alt="Logo Dev Finance">
+    <div id="auth"></div>
   </header>
   <main class="container">
     <section id="balance">
@@ -116,6 +116,22 @@
     <p>dev.finance$ By <a target="_blank" href="https://github.com/tsbcylon">Teilor Souza Barcelos</a>.</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.0/dist/chart.min.js"></script>
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+      https://firebase.google.com/docs/web/setup#available-libraries -->
+
+  <script>
+    var firebaseConfig = {
+      // Your web app's Firebase configuration
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
   <script src="./scripts.js"></script>
 </body>
 
