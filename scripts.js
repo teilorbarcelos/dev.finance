@@ -1,40 +1,52 @@
 const firebaseConfig = {
   // Your web app's Firebase configuration
-
 }
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig)
 
-const auth = firebase.auth()
-const user = auth.currentUser
+const Auth = {
+  login: firebase.auth(),
+  id: null,
+  name: null,
+  email: null,
+  photo: null,
+  verifyUser() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
 
-const verifyUser = () => {
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      document.getElementById('auth').innerHTML = `${user.displayName}<a href="#" class="login-button" onclick="signOut()"> Logout</a>`
-    } else {
-      document
-      .getElementById('auth')
-      .innerHTML = '<a href="#" class="login-button" onclick="signInWithGoogle()">Login com Google</a>'
-    }
-  });
-}
+        Auth.id = user.uid
+        Auth.name = user.displayName
+        Auth.email = user.email
+        Auth.photo = user.photoURL
 
-const signInWithGoogle = () => {
-  const googleProvider = new firebase.auth.GoogleAuthProvider()
-  auth.signInWithPopup(googleProvider)
-    .then(() => {
+        document.getElementById('auth').innerHTML = `${Auth.name}<a href="#" class="login-button" onclick="Auth.signOut()"> Logout</a>`
+      } else {
+
+        Auth.id = null
+        Auth.name = null
+        Auth.email = null
+        Auth.photo = null
+        document
+        .getElementById('auth')
+        .innerHTML = '<a href="#" class="login-button" onclick="Auth.signInWithGoogle()">Login com Google</a>'
+      }
+    });
+  },
+  signInWithGoogle() {
+    const googleProvider = new firebase.auth.GoogleAuthProvider()
+    Auth.login.signInWithPopup(googleProvider)
+      .then(() => {
+        App.reload()
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  },
+  signOut() {
+    Auth.login.signOut().then(() => {
       App.reload()
     })
-    .catch(error => {
-      console.log(error)
-    })
-}
-
-const signOut = () => {
-  auth.signOut().then(() => {
-    App.reload()
-  })
+  }
 }
 
 const Modal = {
@@ -276,7 +288,7 @@ const Form = {
 
 const App = {
   init() {
-    verifyUser()
+    Auth.verifyUser()
     DOM.updateBalance()
     if(Transaction.all.length > 0){
       document.getElementById('data-table').classList.remove('hidden')
