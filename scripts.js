@@ -1,5 +1,12 @@
 const firebaseConfig = {
   // Your web app's Firebase configuration
+  apiKey: "AIzaSyCzKnpjuMvRgQWzkUgKoWqUq2hxBTrvD_k",
+  authDomain: "devdotfinance.firebaseapp.com",
+  databaseURL: "https://devdotfinance-default-rtdb.firebaseio.com",
+  projectId: "devdotfinance",
+  storageBucket: "devdotfinance.appspot.com",
+  messagingSenderId: "648871118322",
+  appId: "1:648871118322:web:7de41dd28e15870343576b"
 }
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig)
@@ -26,11 +33,12 @@ const Auth = {
         Auth.name = null
         Auth.email = null
         Auth.photo = null
+
         document
         .getElementById('auth')
         .innerHTML = '<a href="#" class="login-button" onclick="Auth.signInWithGoogle()">Login com Google</a>'
       }
-    });
+    })
   },
   signInWithGoogle() {
     const googleProvider = new firebase.auth.GoogleAuthProvider()
@@ -69,6 +77,16 @@ const Storage = {
   },
   set(transactions){
     localStorage.setItem('dev.finance:transactions', JSON.stringify(transactions))
+  }
+}
+
+const database = {
+  DB: firebase.database(),
+  get() {
+
+  },
+  set() {
+    
   }
 }
 
