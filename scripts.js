@@ -18,7 +18,7 @@ const Auth = {
     const googleProvider = new firebase.auth.GoogleAuthProvider()
     Auth.login.signInWithPopup(googleProvider)
       .then(() => {
-        App.reload()
+        window.location.reload()
     })
     .catch(error => {
       console.log(error)
@@ -26,7 +26,7 @@ const Auth = {
   },
   signOut() {
     Auth.login.signOut()
-    App.reload()
+    window.location.reload()
   }
 }
 
@@ -54,11 +54,11 @@ const Storage = {
 }
 
 const Database = {
-  get() {
-    firebase.auth().onAuthStateChanged(user => {
-      Database.get(DB.ref(`users/${user.uid}/transactions`).on('value', function(snapshot){
-        console.log(snapshot.val())
-      }))
+  get(user) {
+    DB.ref(`users/${user.uid}/transactions`).on('value', snapshot => {
+      snapshot.forEach(transaction => {
+        console.log(transaction.val())
+      })
     })
   },
   add(transaction, user) {
@@ -206,16 +206,6 @@ const DOM = {
 
   clearTransactions(){
     DOM.transactionsContainer.innerHTML = ''
-
-    document.getElementById('incomeDisplay')
-    .innerHTML = Utils.formatCurrency(0)
-    document.getElementById('expenseDisplay')
-    .innerHTML = Utils.formatCurrency(0)
-    document.getElementById('totalDisplay')
-    .innerHTML = Utils.formatCurrency(0)
-
-    document.getElementById('data-table').classList.add('hidden')
-    document.getElementById('chart').classList.add('hidden')
   }
 }
 
@@ -302,9 +292,11 @@ const App = {
   init() {
     firebase.auth().onAuthStateChanged(user => {
       if(user){
+
         document.getElementById('auth').innerHTML = `${user.displayName}<a href="#" class="login-button" onclick="Auth.signOut()"> Logout</a>`
+        Database.get(user)
+
       } else {
-        
         document
         .getElementById('auth')
         .innerHTML = '<a href="#" class="login-button" onclick="Auth.signInWithGoogle()">Login com Google</a>'
