@@ -10,50 +10,23 @@ const firebaseConfig = {
 }
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig)
+const DB = firebase.database()
 
 const Auth = {
   login: firebase.auth(),
-  id: null,
-  name: null,
-  email: null,
-  photo: null,
-  verifyUser() {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-
-        Auth.id = user.uid
-        Auth.name = user.displayName
-        Auth.email = user.email
-        Auth.photo = user.photoURL
-
-        document.getElementById('auth').innerHTML = `${Auth.name}<a href="#" class="login-button" onclick="Auth.signOut()"> Logout</a>`
-      } else {
-
-        Auth.id = null
-        Auth.name = null
-        Auth.email = null
-        Auth.photo = null
-
-        document
-        .getElementById('auth')
-        .innerHTML = '<a href="#" class="login-button" onclick="Auth.signInWithGoogle()">Login com Google</a>'
-      }
-    })
-  },
   signInWithGoogle() {
     const googleProvider = new firebase.auth.GoogleAuthProvider()
     Auth.login.signInWithPopup(googleProvider)
       .then(() => {
         App.reload()
-      })
-      .catch(error => {
-        console.log(error)
-      })
+    })
+    .catch(error => {
+      console.log(error)
+    })
   },
   signOut() {
-    Auth.login.signOut().then(() => {
-      App.reload()
-    })
+    Auth.login.signOut()
+    App.reload()
   }
 }
 
@@ -80,13 +53,16 @@ const Storage = {
   }
 }
 
-const database = {
-  DB: firebase.database(),
+const Database = {
   get() {
-
+    firebase.auth().onAuthStateChanged(user => {
+      Database.get(DB.ref(`users/${user.uid}/transactions`).on('value', function(snapshot){
+        console.log(snapshot.val())
+      }))
+    })
   },
-  set() {
-    
+  add(transaction, user) {
+    DB.ref(`users/${user.uid}/transactions`).push(transaction)
   }
 }
 
@@ -230,6 +206,16 @@ const DOM = {
 
   clearTransactions(){
     DOM.transactionsContainer.innerHTML = ''
+
+    document.getElementById('incomeDisplay')
+    .innerHTML = Utils.formatCurrency(0)
+    document.getElementById('expenseDisplay')
+    .innerHTML = Utils.formatCurrency(0)
+    document.getElementById('totalDisplay')
+    .innerHTML = Utils.formatCurrency(0)
+
+    document.getElementById('data-table').classList.add('hidden')
+    document.getElementById('chart').classList.add('hidden')
   }
 }
 
@@ -296,7 +282,15 @@ const Form = {
     try {
       Form.validateFields(data)
       const transaction = Form.formatData(data)
-      Transaction.add(transaction)
+
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          Database.add(transaction, user)
+        } else {
+          Transaction.add(transaction)
+        }
+      })
+
       Form.clearFields()
     } catch (error) {
       alert(error.message)
@@ -306,17 +300,27 @@ const Form = {
 
 const App = {
   init() {
-    Auth.verifyUser()
-    DOM.updateBalance()
-    if(Transaction.all.length > 0){
-      document.getElementById('data-table').classList.remove('hidden')
-      document.getElementById('chart').classList.remove('hidden')
-      Transaction.all.forEach(DOM.addTransaction)
-      ChartGraph.graphCreate()
-    }else{
-      document.getElementById('data-table').classList.add('hidden')
-      document.getElementById('chart').classList.add('hidden')
-    }
+    firebase.auth().onAuthStateChanged(user => {
+      if(user){
+        document.getElementById('auth').innerHTML = `${user.displayName}<a href="#" class="login-button" onclick="Auth.signOut()"> Logout</a>`
+      } else {
+        
+        document
+        .getElementById('auth')
+        .innerHTML = '<a href="#" class="login-button" onclick="Auth.signInWithGoogle()">Login com Google</a>'
+
+        DOM.updateBalance()
+        if(Transaction.all.length > 0){
+          document.getElementById('data-table').classList.remove('hidden')
+          document.getElementById('chart').classList.remove('hidden')
+          Transaction.all.forEach(DOM.addTransaction)
+          ChartGraph.graphCreate()
+        }else{
+          document.getElementById('data-table').classList.add('hidden')
+          document.getElementById('chart').classList.add('hidden')
+        }
+      }
+    })
   },
   reload() {
     DOM.clearTransactions()
