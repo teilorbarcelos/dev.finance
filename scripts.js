@@ -58,20 +58,26 @@ const Database = {
       if(arrayTransactions.length > 0){
         document.getElementById('data-table').classList.remove('hidden')
         document.getElementById('chart').classList.remove('hidden')
-        DOM.updateBalance(arrayTransactions)
         ChartGraph.graphCreate(arrayTransactions)
       }else{
         document.getElementById('data-table').classList.add('hidden')
         document.getElementById('chart').classList.add('hidden')
       }
+      DOM.updateBalance(arrayTransactions)
 
       
     })
   },
+
   add(transaction, user) {
     DB.ref(`users/${user.uid}/transactions`).push(transaction)
-    App.reload()
-  }
+  },
+
+  remove(index) {
+    firebase.auth().onAuthStateChanged(user => {
+      DB.ref(`users/${user.uid}/transactions/${index}`).remove()
+    })
+  },
 }
 
 const Transaction = {
@@ -83,9 +89,14 @@ const Transaction = {
     App.reload()
   },
   remove(index) {
-    Transaction.all.splice(index, 1)
-    Storage.set(Transaction.all)
-    App.reload()
+    if(Transaction.all.length > 0){
+      Transaction.all.splice(index, 1)
+      Storage.set(Transaction.all)
+      App.reload()
+    }else{
+      Database.remove(index)
+      App.reload()
+    }
   },
 
   incomes(transactions) {
@@ -235,7 +246,7 @@ const DOM = {
       <td class=${transaction.amount > 0 ? 'income' : 'expense'}>R$ ${Utils.formatCurrency(transaction.amount)}</td>
       <td>${Utils.formatDate(transaction.date)}</td>
       <td>
-        <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover transação">
+        <img onclick="Transaction.remove('${index}')" src="./assets/minus.svg" alt="Remover transação">
       </td>
     `
     return html
@@ -322,6 +333,7 @@ const Form = {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           Database.add(transaction, user)
+          App.reload()
         } else {
           Transaction.add(transaction)
         }
@@ -338,11 +350,14 @@ const App = {
   init() {
     firebase.auth().onAuthStateChanged(user => {
       if(user){
+        DOM.clearTransactions()
 
         document.getElementById('auth').innerHTML = `${user.displayName}<a href="#" class="login-button" onclick="Auth.signOut()"> Logout</a>`
         Database.get(user)
 
       } else {
+        DOM.clearTransactions()
+
         document
         .getElementById('auth')
         .innerHTML = '<a href="#" class="login-button" onclick="Auth.signInWithGoogle()">Login com Google</a>'
@@ -361,7 +376,6 @@ const App = {
     })
   },
   reload() {
-    DOM.clearTransactions()
     App.init()
   }
 }
