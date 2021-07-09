@@ -1,12 +1,5 @@
 const firebaseConfig = {
   // Your web app's Firebase configuration
-  apiKey: "AIzaSyCzKnpjuMvRgQWzkUgKoWqUq2hxBTrvD_k",
-  authDomain: "devdotfinance.firebaseapp.com",
-  databaseURL: "https://devdotfinance-default-rtdb.firebaseio.com",
-  projectId: "devdotfinance",
-  storageBucket: "devdotfinance.appspot.com",
-  messagingSenderId: "648871118322",
-  appId: "1:648871118322:web:7de41dd28e15870343576b"
 }
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig)
@@ -55,14 +48,29 @@ const Storage = {
 
 const Database = {
   get(user) {
-    DB.ref(`users/${user.uid}/transactions`).on('value', snapshot => {
-      snapshot.forEach(transaction => {
-        console.log(transaction.val())
+    DB.ref(`users/${user.uid}/transactions`).orderByChild("date").on('value', transactions => {
+      let arrayTransactions = []
+      transactions.forEach(transaction => {
+        DOM.addTransaction(transaction.val(), transaction.key)
+        arrayTransactions.push(transaction.val())
       })
+
+      if(arrayTransactions.length > 0){
+        document.getElementById('data-table').classList.remove('hidden')
+        document.getElementById('chart').classList.remove('hidden')
+        DOM.updateBalance(arrayTransactions)
+        ChartGraph.graphCreate(arrayTransactions)
+      }else{
+        document.getElementById('data-table').classList.add('hidden')
+        document.getElementById('chart').classList.add('hidden')
+      }
+
+      
     })
   },
   add(transaction, user) {
     DB.ref(`users/${user.uid}/transactions`).push(transaction)
+    App.reload()
   }
 }
 
@@ -80,26 +88,48 @@ const Transaction = {
     App.reload()
   },
 
-  incomes() {
+  incomes(transactions) {
     let income = 0;
-    Transaction.all.forEach(transaction => {
-      if(transaction.amount > 0)
-        income += transaction.amount
-    })
+
+    if(transactions){
+      transactions.forEach(transaction => {
+        if(transaction.amount > 0)
+          income += transaction.amount
+      })
+    }else{
+      Transaction.all.forEach(transaction => {
+        if(transaction.amount > 0)
+          income += transaction.amount
+      })
+    }
 
     return income
   },
-  expenses() {
+  expenses(transactions) {
     let expense = 0;
-    Transaction.all.forEach(transaction => {
-      if(transaction.amount < 0)
-        expense += transaction.amount
-    })
+
+    if(transactions){
+      transactions.forEach(transaction => {
+        if(transaction.amount < 0)
+          expense += transaction.amount
+      })
+    }else{
+      Transaction.all.forEach(transaction => {
+        if(transaction.amount < 0)
+          expense += transaction.amount
+      })
+    }
 
     return expense
   },
-  total() {
-    let total = Transaction.expenses() + Transaction.incomes()
+  total(transactions) {
+    let total
+
+    if(transactions){
+      total = Transaction.expenses(transactions) + Transaction.incomes(transactions)
+    }else{
+      total = Transaction.expenses() + Transaction.incomes()
+    }
 
     return total
   }
@@ -107,21 +137,37 @@ const Transaction = {
 
 const ChartGraph = {
   chart: '',
-  graphCreate(){
+  graphCreate(transactions){
     let labels = [], datasetDataIncomes = [], datasetDataExpense = [], datasetDataTotal = [], total = 0
 
-    Transaction.all.forEach(transaction => {
-      labels.push(Utils.formatDate(transaction.date))
-      total += transaction.amount
-      datasetDataTotal.push(total / 100)
-      if(transaction.amount > 0){
-        datasetDataIncomes.push(transaction.amount / 100)
-        datasetDataExpense.push(0)
-      }else{
-        datasetDataIncomes.push(0)
-        datasetDataExpense.push(transaction.amount * -1 / 100)
-      }
-    })
+    if(transactions){
+      transactions.forEach(transaction => {
+        labels.push(Utils.formatDate(transaction.date))
+        total += transaction.amount
+        datasetDataTotal.push(total / 100)
+        if(transaction.amount > 0){
+          datasetDataIncomes.push(transaction.amount / 100)
+          datasetDataExpense.push(0)
+        }else{
+          datasetDataIncomes.push(0)
+          datasetDataExpense.push(transaction.amount * -1 / 100)
+        }
+      })
+    }else{
+      Transaction.all.forEach(transaction => {
+        labels.push(Utils.formatDate(transaction.date))
+        total += transaction.amount
+        datasetDataTotal.push(total / 100)
+        if(transaction.amount > 0){
+          datasetDataIncomes.push(transaction.amount / 100)
+          datasetDataExpense.push(0)
+        }else{
+          datasetDataIncomes.push(0)
+          datasetDataExpense.push(transaction.amount * -1 / 100)
+        }
+      })
+    }
+
     document.getElementById('chart').innerHTML = '<canvas class="line-chart"}></canvas>'
     let ctx = document.getElementsByClassName('line-chart')
     ChartGraph.chart = new Chart(ctx, {
@@ -195,13 +241,13 @@ const DOM = {
     return html
   },
 
-  updateBalance(){
+  updateBalance(transactions){
     document.getElementById('incomeDisplay')
-    .innerHTML = Utils.formatCurrency(Transaction.incomes())
+    .innerHTML = Utils.formatCurrency(Transaction.incomes(transactions))
     document.getElementById('expenseDisplay')
-    .innerHTML = Utils.formatCurrency(Transaction.expenses())
+    .innerHTML = Utils.formatCurrency(Transaction.expenses(transactions))
     document.getElementById('totalDisplay')
-    .innerHTML = Utils.formatCurrency(Transaction.total())
+    .innerHTML = Utils.formatCurrency(Transaction.total(transactions))
   },
 
   clearTransactions(){
