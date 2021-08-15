@@ -1,5 +1,12 @@
 const firebaseConfig = {
   // Your web app's Firebase configuration
+  apiKey: "AIzaSyCzKnpjuMvRgQWzkUgKoWqUq2hxBTrvD_k",
+  authDomain: "devdotfinance.firebaseapp.com",
+  databaseURL: "https://devdotfinance-default-rtdb.firebaseio.com",
+  projectId: "devdotfinance",
+  storageBucket: "devdotfinance.appspot.com",
+  messagingSenderId: "648871118322",
+  appId: "1:648871118322:web:7de41dd28e15870343576b"
 }
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig)
